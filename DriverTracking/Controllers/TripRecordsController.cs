@@ -16,7 +16,7 @@ namespace DriverTracking.Controllers
     {
         private readonly DriverTrackingContext _context;
         const string Master = "Master";
-        const string Recipient = "Recipient";
+        public string Recipient;
 
         public TripRecordsController(DriverTrackingContext context)
         {
@@ -86,7 +86,9 @@ namespace DriverTracking.Controllers
             await _context.SaveChangesAsync();
 
             // Begin coin transaction
-            //var blockChain = new BlockChain(proofOfWorkDifficulty:2, miningReward: tripRecords.CoinsEarned);
+            var blockChain = new BlockChain(proofOfWorkDifficulty:2, miningReward: tripRecords.CoinsEarned);
+            Console.WriteLine("BALANCE of the miner: {0}", blockChain.GetBalance(Recipient));
+            PrintChain(blockChain);
 
             return CreatedAtAction("GetTripRecords", new { id = tripRecords.Id }, tripRecords);
         }
@@ -110,6 +112,26 @@ namespace DriverTracking.Controllers
         private bool TripRecordsExists(Guid id)
         {
             return _context.TripRecords.Any(e => e.Id == id);
+        }
+
+        public void PrintChain(BlockChain blockChain)
+        {
+            Console.WriteLine("----------------- Start Blockchain -----------------");
+            foreach (Block block in blockChain.Chain)
+            {
+                Console.WriteLine();
+                Console.WriteLine("------ Start Block ------");
+                Console.WriteLine("Hash: {0}", block.Hash);
+                Console.WriteLine("Previous Hash: {0}", block.PreviousHash);
+                Console.WriteLine("--- Start Transactions ---");
+                foreach (Transaction transaction in block.Transactions)
+                {
+                    Console.WriteLine("From: {0} To {1} Amount {2}", transaction.From, transaction.To, transaction.Amount);
+                }
+                Console.WriteLine("--- End Transactions ---");
+                Console.WriteLine("------ End Block ------");
+            }
+            Console.WriteLine("----------------- End Blockchain -----------------");
         }
     }
 }
